@@ -487,7 +487,8 @@ class Dict(dict):
         return '{%s}' % ',\n '.join('%r: %r' % i for i in sorted(self.items()))
 
 
-def docopt(doc, argv=None, help=True, version=None, options_first=False):
+def docopt(doc, argv=None, help=True, version=None,
+        options_first=False, handlers=None):
     """Parse `argv` based on command-line interface described in `doc`.
 
     `docopt` creates your command-line interface based on its
@@ -511,6 +512,13 @@ def docopt(doc, argv=None, help=True, version=None, options_first=False):
     options_first : bool (default: False)
         Set to True to require options precede positional arguments,
         i.e. to forbid options and positional arguments intermix.
+    handlers : dict
+        Maps options to functions named 'handle_X' where X is the option
+        name stripped down to a valid python identified. Options with
+        handlers must be mutually exclusive. If no option matches
+        'default_handler' function is called. Stripped arguments are
+        passed as keyword arguments to handler with unspecified
+        arguments removed instead of having a value of None.
 
     Returns
     -------
@@ -577,5 +585,71 @@ def docopt(doc, argv=None, help=True, version=None, options_first=False):
     extras(help, version, argv, doc)
     matched, left, collected = pattern.fix().match(argv)
     if matched and left == []:  # better error message if left?
-        return Dict((a.name, a.value) for a in (pattern.flat() + collected))
+        arguments = Dict((a.name, a.value) for a in (pattern.flat() + collected))
+        if handlers:
+            dispatch(arguments, handlers, help, version)
+        return arguments
     raise DocoptExit()
+
+def as_ident(name):
+    m = re.search('[A-Za-z][A-Za-z0-9_-]*', name)
+    if m:
+        return m.group().replace('-', '_')
+    else:
+        return name
+
+class DispatchError(Exception):
+
+    """ Arguments do not match the requirements of name-based dispatching. """
+
+def dispatch(arguments, handlers, default_help=True, default_version=False):
+    """ Dispatch docopt result to one of the handlers in handlers.
+
+    The base name of an option or argument is the name stripped of - and <>.
+    It must not be ambiguous (e.g. '--foo' and 'foo' map to the same name)
+
+    Handlers are named handle_X where X is the base name of argument.
+    Exactly one option with a handler may have a value other than None/False.
+
+    Handler functions receive all parsed arguments as keyword arguments with
+    unspecified arguments (None) and other handlers removed.
+
+    Note: the globals() namespace may be passed as handlers.
+    """
+
+    handler = None
+    kwargs = {}
+    for name, value in arguments.items():
+        basename = as_ident(name)
+        if basename in kwargs:
+            raise DispatchError('Base name of argument %s is ambiguous' % name)
+        if value is None:
+            continue
+
+        h = handlers.get('handle_' + basename)
+        if h:
+            if not value:
+                continue
+            if handler is not None:
+                raise DispatchError('More than one handler found - dispatch options must be mutually exclusive')
+            handler = h
+            if value is True:
+                continue
+
+        kwargs[basename] = value
+
+    if default_help:
+        if kwargs.get('help') is False:
+            kwargs.pop('help')
+        if kwargs.get('h') is False:
+            kwargs.pop('h')
+    if default_version:
+        if kwargs.get('version') is False:
+            kwargs.pop('version')
+
+    if handler is None:
+        handler = handlers.get('default_handler')
+    if handler is None:
+        raise DispatchError('No matching handlers found.')
+
+    sys.exit(handler(**kwargs))
