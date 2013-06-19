@@ -19,7 +19,19 @@ Options:
 """
 from docopt import docopt
 
+def process_files(angle, files, v=False, q=False, r=False):
+    for file in files:
+        print('file={0}, angle={1}'.format(file, angle))
+    print('verbose={0}, quiet={1}, report={2}'.format(v, q, r))
+
+def handle_right(CORRECTION, FILE, **opts):
+    process_files(int(CORRECTION), FILE, **opts)
+
+def handle_left(CORRECTION, FILE, **opts):
+    process_files(-int(CORRECTION), FILE, **opts)
+
+def default_handler(FILE, **opts):
+    process_files(0, FILE, **opts)
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__)
-    print(arguments)
+    docopt(__doc__, handlers=globals())

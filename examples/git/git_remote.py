@@ -15,9 +15,38 @@ usage: git remote [-v | --verbose]
     -v, --verbose         be verbose; must be placed before a subcommand
 
 """
-from docopt import docopt
+import docopt
 
+def handle_add(name, url, t, m, f, mirror, **kw):
+    pass
+
+def handle_rename(old, new, **kw):
+    pass
+
+def handle_rm(name, **kw):
+    pass
+
+def handle_set_head(name, a, d, branch, **kw):
+    pass
+
+def handle_show(name, verbose, n, **kw):
+    pass
+
+def handle_prune(name, dry_rune):
+    pass
+
+def handle_set_url(name, **kw):
+
+    def handle_add(name, newurl, **kw):
+        pass
+
+    def handle_delete(name, url, **kw):
+        pass
+
+    def default_handler(name, newurl, oldurl, **kw):
+        pass
+
+#...
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__)
-    print(arguments)
+    docopt.docopt(__doc__, handlers=globals())

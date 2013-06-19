@@ -6,7 +6,11 @@
 """
 from docopt import docopt
 
+def handle_tcp(host, port, timeout=None):
+    print('host={0} port={1} timeout={2}'.format(host, port, timeout))
+
+def handle_serial(port, baud=None, timeout=None):
+    print('port={0} baud={1} timeout={2}'.format(port, baud, timeout))
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version='0.1.1rc')
-    print(arguments)
+    docopt(__doc__, version='0.1.1rc', handlers=globals())

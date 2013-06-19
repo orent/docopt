@@ -12,5 +12,17 @@ Try: counted_example.py -vvvvvvvvvv
 """
 from docopt import docopt
 
+def handle_v(v):
+    print("v={0}".format(v))
 
-print(docopt(__doc__))
+def handle_go(go):
+    print("go={0}".format(go))
+
+def handle_path(path):
+    for p in path:
+        print("path={0}".format(p))
+
+def handle_file(file):
+    print("file1={0[0]}, file2={0[1]}".format(file))
+
+docopt(__doc__, handlers=globals())

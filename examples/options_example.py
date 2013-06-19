@@ -33,7 +33,17 @@ Options:
 """
 from docopt import docopt
 
+def handle_PATH(PATH, **kw):
+    for k, v in kw.items():
+        print('{0}={1}'.format(k, v))
+    for p in PATH:
+        print('path={0}'.format(p))
+
+def handle_doctest(**kw):
+    print('doctest')
+
+def handle_testsuite(testsuite, **kw):
+    print('testsuite={0}'.format(testsuite))
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version='1.0.0rc2')
-    print(arguments)
+    docopt(__doc__, version='1.0.0rc2', handlers=globals())

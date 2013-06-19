@@ -9,7 +9,9 @@ Options:
 """
 from docopt import docopt
 
+def default_handler(ODD, EVEN):
+    for a, b in zip(ODD, EVEN):
+        print('ODD={0}, EVEN={1}'.format(a, b))
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__)
-    print(arguments)
+    docopt(__doc__, handlers=globals())

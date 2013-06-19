@@ -14,7 +14,8 @@ Options:
 """
 from docopt import docopt
 
+def default_handler(port, apply, q, number=None, timeout=None):
+    print('port={0}, number={1}, timeout={2}, apply={3}, quiet={4}'.format(port, number, timeout, apply, q))
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version='1.0.0rc2')
-    print(arguments)
+    docopt(__doc__, version='1.0.0rc2', handlers=globals())
